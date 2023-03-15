@@ -1,2 +1,2 @@
-# Example
+# Party Points
 An example greeter plugin

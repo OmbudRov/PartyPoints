@@ -4,9 +4,10 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("PartyPoints")
+@ConfigGroup(PartyPointsConfig.GROUP)
 public interface PartyPointsConfig extends Config
 {
+	String GROUP = "PartyPoints";
 	@ConfigItem(
 		keyName = "AlwaysShowIcon",
 		name = "Always show sidebar",

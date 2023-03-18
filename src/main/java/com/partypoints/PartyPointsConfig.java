@@ -28,16 +28,6 @@ public interface PartyPointsConfig extends Config
 		return true;
 	}
 
-	@ConfigItem(
-		keyName = "recolorNames",
-		name = "Recolor names",
-		description = "Recolor party members names based on unique color hash",
-		position = 3
-	)
-	default boolean recolorNames()
-	{
-		return true;
-	}
 
 	@ConfigItem(
 		keyName = "previousPartyId",

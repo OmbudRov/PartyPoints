@@ -1,4 +1,4 @@
-package com.partypoints.messages;
+package com.partypoints.data;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
@@ -11,11 +11,12 @@ import net.runelite.client.party.messages.PartyMemberMessage;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class StatusUpdate extends PartyMemberMessage
+public class StatUpdate extends PartyMemberMessage
 {
 	@SerializedName("n")
-	private String characterName = null;
+	private String cName;
 
 	@SerializedName("pp")
-	private Integer CurrentPersonalPoints = null;
+	private Integer CurrentPersonalPoints;
+
 }

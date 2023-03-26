@@ -1,15 +1,15 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.1.0"
+//    id "com.github.johnrengelman.shadow" version "6.1.0"
 	id 'java'
 }
 
-shadowJar {
-    from sourceSets.test.output
-    configurations = [project.configurations.testRuntimeClasspath]
-    manifest {
-        attributes "Main-Class": "com.partypoints.PartyPointsPluginTest"
-    }
-}
+//shadowJar {
+//    from sourceSets.test.output
+//    configurations = [project.configurations.testRuntimeClasspath]
+//    manifest {
+//        attributes "Main-Class": "com.partypoints.PartyPointsPluginTest"
+//    }
+//}
 
 repositories {
 	mavenLocal()

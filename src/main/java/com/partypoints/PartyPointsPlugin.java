@@ -69,6 +69,9 @@ public class PartyPointsPlugin extends Plugin
 
 	private StatUpdate lastStatus;
 
+	private PartyPointsOverlay partyPointsOverlay = null;
+	private boolean button = false;
+
 	private static int messageFreq(int partySize)
 	{
 		return Math.max(1, partySize - 6);
@@ -91,7 +94,11 @@ public class PartyPointsPlugin extends Plugin
 			.build();
 
 		// Add Panel to Sidebar
-		clientToolbar.addNavigation(navButton);
+		if (config.AlwaysShowIcon())
+		{
+			button = true;
+			clientToolbar.addNavigation(navButton);
+		}
 
 		wsClient.registerMessage(StatUpdate.class);
 		SwingUtilities.invokeLater(this::requestSync);
@@ -124,6 +131,20 @@ public class PartyPointsPlugin extends Plugin
 		{
 			SwingUtilities.invokeLater(panel::updateAll);
 		}
+		if(config.AlwaysShowIcon())
+		{
+			if (!button)
+			{
+				clientToolbar.addNavigation(navButton);
+				button=false;
+			}
+		}
+		else if (button && !party.isInParty())
+		{
+			clientToolbar.removeNavigation(navButton);
+			button=true;
+		}
+		button= config.AlwaysShowIcon();
 	}
 
 	@Subscribe
@@ -180,6 +201,11 @@ public class PartyPointsPlugin extends Plugin
 	@Subscribe
 	public void onUserSync(final UserSync event)
 	{
+		if(!button)
+		{
+			clientToolbar.addNavigation(navButton);
+			button=true;
+		}
 		clientThread.invokeLater(() -> checkStateChanged(true));
 	}
 
@@ -191,6 +217,10 @@ public class PartyPointsPlugin extends Plugin
 		if (removed != null)
 		{
 			SwingUtilities.invokeLater(() -> panel.removeMember(event.getMemberId()));
+		}
+		if (button && (!party.isInParty() || party.getMembers().size() == 0) && !config.AlwaysShowIcon()){
+			clientToolbar.removeNavigation(navButton);
+			button=false;
 		}
 	}
 

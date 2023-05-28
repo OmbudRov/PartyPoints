@@ -33,7 +33,7 @@ dependencies {
 }
 
 group = 'com.partypoints'
-version = '1.0'
+version = '1.1'
 sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {

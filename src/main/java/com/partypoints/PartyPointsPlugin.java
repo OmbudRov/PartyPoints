@@ -4,27 +4,21 @@ import com.google.common.base.Strings;
 import com.google.inject.Provides;
 import com.partypoints.data.PartyData;
 import com.partypoints.data.StatUpdate;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
-
 import lombok.Getter;
-
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
-
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -41,6 +35,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
@@ -64,6 +59,8 @@ public class PartyPointsPlugin extends Plugin
 	private ClientThread clientThread;
 	@Inject
 	private ClientToolbar clientToolbar;
+	@Inject
+	private OverlayManager overlayManager;
 	private PartyPointsPanel panel;
 	private NavigationButton navButton;
 
@@ -102,6 +99,8 @@ public class PartyPointsPlugin extends Plugin
 
 		wsClient.registerMessage(StatUpdate.class);
 		SwingUtilities.invokeLater(this::requestSync);
+
+		partyPointsOverlay = new PartyPointsOverlay(this, config);
 	}
 
 	@Override
@@ -116,6 +115,8 @@ public class PartyPointsPlugin extends Plugin
 		partyDataMap.clear();
 		panel = null;
 		lastStatus = null;
+		button = false;
+		overlayManager.remove(partyPointsOverlay);
 	}
 
 	@Provides
@@ -131,20 +132,20 @@ public class PartyPointsPlugin extends Plugin
 		{
 			SwingUtilities.invokeLater(panel::updateAll);
 		}
-		if(config.AlwaysShowIcon())
+		if (config.AlwaysShowIcon())
 		{
 			if (!button)
 			{
 				clientToolbar.addNavigation(navButton);
-				button=false;
+				button = false;
 			}
 		}
 		else if (button && !party.isInParty())
 		{
 			clientToolbar.removeNavigation(navButton);
-			button=true;
+			button = true;
 		}
-		button= config.AlwaysShowIcon();
+		button = config.AlwaysShowIcon();
 	}
 
 	@Subscribe
@@ -157,6 +158,11 @@ public class PartyPointsPlugin extends Plugin
 	public void onGameTick(final GameTick tick)
 	{
 		checkStateChanged(false);
+		overlayManager.remove(partyPointsOverlay);
+		if (party.isInParty())
+		{
+			overlayManager.add(partyPointsOverlay);
+		}
 	}
 
 	@Subscribe
@@ -201,10 +207,10 @@ public class PartyPointsPlugin extends Plugin
 	@Subscribe
 	public void onUserSync(final UserSync event)
 	{
-		if(!button)
+		if (!button)
 		{
 			clientToolbar.addNavigation(navButton);
-			button=true;
+			button = true;
 		}
 		clientThread.invokeLater(() -> checkStateChanged(true));
 	}
@@ -213,14 +219,14 @@ public class PartyPointsPlugin extends Plugin
 	public void onUserPart(final UserPart event)
 	{
 		final PartyData removed = partyDataMap.remove(event.getMemberId());
-
 		if (removed != null)
 		{
 			SwingUtilities.invokeLater(() -> panel.removeMember(event.getMemberId()));
 		}
-		if (button && (!party.isInParty() || party.getMembers().size() == 0) && !config.AlwaysShowIcon()){
+		if (button && (!party.isInParty() || party.getMembers().size() == 0) && !config.AlwaysShowIcon())
+		{
 			clientToolbar.removeNavigation(navButton);
-			button=false;
+			button = false;
 		}
 	}
 
@@ -229,12 +235,10 @@ public class PartyPointsPlugin extends Plugin
 	{
 		// Reset party
 		partyDataMap.clear();
-
 		if (event.getPartyId() != null)
 		{
 			config.setPreviousPartyId(event.getPassphrase());
 		}
-
 		SwingUtilities.invokeLater(panel::removeAllMembers);
 	}
 
@@ -276,6 +280,7 @@ public class PartyPointsPlugin extends Plugin
 	void leaveParty()
 	{
 		party.changeParty(null);
+		overlayManager.remove(partyPointsOverlay);
 	}
 
 	private void checkStateChanged(boolean forceSend)
@@ -298,7 +303,6 @@ public class PartyPointsPlugin extends Plugin
 		final Player localPlayer = client.getLocalPlayer();
 		final String characterName = Strings.nullToEmpty(localPlayer != null && client.getGameState().getState() >= GameState.LOADING.getState() ? localPlayer.getName() : null);
 
-
 		boolean shouldSend = false;
 		final StatUpdate statUpdate = new StatUpdate();
 
@@ -320,5 +324,15 @@ public class PartyPointsPlugin extends Plugin
 			lastStatus = new StatUpdate(characterName, CurrentPersonalPoints);
 		}
 
+	}
+
+	protected void updateOverlay(String Name, int points)
+	{
+		partyPointsOverlay.PartyData.put(Name, points);
+	}
+
+	protected void resetParty()
+	{
+		partyPointsOverlay.PartyData.clear();
 	}
 }

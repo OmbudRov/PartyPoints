@@ -39,6 +39,7 @@ public class PartyPointsPanel extends PluginPanel
 	private final JButton joinPartyButton = new JButton();
 	private final JButton rejoinPartyButton = new JButton();
 	private final JButton copyPartyIdButton = new JButton();
+	private final JButton refreshPartyButton = new JButton();
 
 	private final PluginErrorPanel noPartyPanel = new PluginErrorPanel();
 	private final PluginErrorPanel emptyPartyPanel = new PluginErrorPanel();
@@ -47,20 +48,20 @@ public class PartyPointsPanel extends PluginPanel
 	@Inject
 	PartyPointsPanel(final ClientThread clientThread, final PartyPointsPlugin plugin, final PartyPointsConfig config, final PartyService party)
 	{
-		this.plugin=plugin;
-		this.party=party;
-		this.config=config;
+		this.plugin = plugin;
+		this.party = party;
+		this.config = config;
 
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setLayout(new BorderLayout());
 
-		final JPanel layoutPanel= new JPanel();
-		BoxLayout boxLayout = new BoxLayout(layoutPanel,BoxLayout.Y_AXIS);
+		final JPanel layoutPanel = new JPanel();
+		BoxLayout boxLayout = new BoxLayout(layoutPanel, BoxLayout.Y_AXIS);
 		layoutPanel.setLayout(boxLayout);
 		add(layoutPanel, BorderLayout.NORTH);
 
-		final  JPanel topPanel = new JPanel();
+		final JPanel topPanel = new JPanel();
 
 		topPanel.setBorder(new EmptyBorder(0, 0, 4, 0));
 		topPanel.setLayout(new GridBagLayout());
@@ -86,6 +87,11 @@ public class PartyPointsPanel extends PluginPanel
 		constraints.gridwidth = 2;
 		topPanel.add(rejoinPartyButton, constraints);
 
+		constraints.gridx = 0;
+		constraints.gridy = 2;
+		constraints.gridwidth = 2;
+		topPanel.add(refreshPartyButton, constraints);
+
 		layoutPanel.add(topPanel);
 		layoutPanel.add(memberBoxPanel);
 
@@ -100,6 +106,9 @@ public class PartyPointsPanel extends PluginPanel
 
 		copyPartyIdButton.setText("Copy passphrase");
 		copyPartyIdButton.setFocusable(false);
+
+		refreshPartyButton.setText("Refresh the Overlay");
+		refreshPartyButton.setFocusable(false);
 
 		startButton.addActionListener(e ->
 		{
@@ -175,10 +184,27 @@ public class PartyPointsPanel extends PluginPanel
 			}
 		});
 
-		noPartyPanel.setContent("Not in a party","Create a party to begin");
+		refreshPartyButton.addActionListener(e ->
+		{
+			if (party.isInParty())
+			{
+				plugin.leaveParty();
+				try
+				{
+					Thread.sleep(600);
+				}
+				catch (InterruptedException ignored)
+				{
+				}
+				party.changeParty(config.previousPartyId());
+			}
+		});
+
+		noPartyPanel.setContent("Not in a party", "Create a party to begin");
 
 		updateParty();
 	}
+
 	void updateParty()
 	{
 		remove(noPartyPanel);
@@ -188,24 +214,25 @@ public class PartyPointsPanel extends PluginPanel
 		joinPartyButton.setVisible(!party.isInParty());
 		rejoinPartyButton.setVisible(!party.isInParty());
 		copyPartyIdButton.setVisible(party.isInParty());
+		refreshPartyButton.setVisible(party.isInParty());
 
-		if(!party.isInParty())
+		if (!party.isInParty())
 		{
 			add(noPartyPanel);
 		}
-		else if (plugin.getPartyDataMap().size()<=1)
+		else if (plugin.getPartyDataMap().size() <= 1)
 		{
-			emptyPartyPanel.setContent("Party Created","Your Party Passphrase is: "+party.getPartyPassphrase()+".");
+			emptyPartyPanel.setContent("Party Created", "Your Party Passphrase is: " + party.getPartyPassphrase() + ".");
 			add(emptyPartyPanel);
 		}
 	}
 
 	void addMember(PartyData partyData)
 	{
-		if(!membersMap.containsKey(partyData.getMemberId()))
+		if (!membersMap.containsKey(partyData.getMemberId()))
 		{
-			PartyPointsMembers partyMember = new PartyPointsMembers(config,memberBoxPanel, partyData,party);
-			membersMap.put(partyData.getMemberId(),partyMember);
+			PartyPointsMembers partyMember = new PartyPointsMembers(plugin, config, memberBoxPanel, partyData, party);
+			membersMap.put(partyData.getMemberId(), partyMember);
 			memberBoxPanel.add(partyMember);
 			memberBoxPanel.revalidate();
 		}
@@ -214,7 +241,7 @@ public class PartyPointsPanel extends PluginPanel
 
 	void removeAllMembers()
 	{
-		membersMap.forEach((key,value)->memberBoxPanel.remove(value));
+		membersMap.forEach((key, value) -> memberBoxPanel.remove(value));
 		memberBoxPanel.revalidate();
 		membersMap.clear();
 		updateParty();
@@ -224,7 +251,7 @@ public class PartyPointsPanel extends PluginPanel
 	{
 		final PartyPointsMembers members = membersMap.remove(memberId);
 
-		if(members!=null)
+		if (members != null)
 		{
 			memberBoxPanel.remove(members);
 			memberBoxPanel.revalidate();
@@ -235,12 +262,14 @@ public class PartyPointsPanel extends PluginPanel
 	void updateMember(long userId)
 	{
 		final PartyPointsMembers members = membersMap.get(userId);
-		if(members!=null)
-			members.update();
+		if (members != null)
+		{
+			members.update(this.plugin);
+		}
 	}
 
 	void updateAll()
 	{
-		membersMap.forEach((key,value)->value.update());
+		membersMap.forEach((key, value) -> value.update(this.plugin));
 	}
 }

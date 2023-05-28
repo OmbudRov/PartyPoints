@@ -33,11 +33,14 @@ public class PartyPointsMembers extends JPanel
 
 	private boolean avatarSet;
 
-	PartyPointsMembers(final PartyPointsConfig config, final JComponent panel, final PartyData memberPartyData, final PartyService partyService)
+	private PartyPointsPlugin plugin;
+
+	PartyPointsMembers(final PartyPointsPlugin plugin, final PartyPointsConfig config, final JComponent panel, final PartyData memberPartyData, final PartyService partyService)
 	{
-		this.config=config;
+		this.plugin = plugin;
+		this.config = config;
 		this.memberPartyData = memberPartyData;
-		this.partyService=partyService;
+		this.partyService = partyService;
 
 		setLayout(new BorderLayout());
 		setBorder(new EmptyBorder(5, 0, 0, 0));
@@ -66,14 +69,14 @@ public class PartyPointsMembers extends JPanel
 
 		final JPanel PPPanel = new JPanel();
 		PPPanel.setLayout(new BorderLayout());
-		PPPanel.setBorder(new EmptyBorder(0, 0,3,0));
+		PPPanel.setBorder(new EmptyBorder(0, 0, 3, 0));
 		PPPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
 
 		name.setFont(FontManager.getRunescapeFont());
-		name.putClientProperty("html.disable",Boolean.TRUE);
+		name.putClientProperty("html.disable", Boolean.TRUE);
 
 		PP.setFont(FontManager.getRunescapeFont());
-		PP.putClientProperty("html.disable",Boolean.TRUE);
+		PP.putClientProperty("html.disable", Boolean.TRUE);
 
 		namesPanel.add(name);
 
@@ -81,7 +84,7 @@ public class PartyPointsMembers extends JPanel
 
 		headerPanel.add(avatar, BorderLayout.WEST);
 		headerPanel.add(namesPanel, BorderLayout.CENTER);
-		headerPanel.add(PPPanel,BorderLayout.EAST);
+		headerPanel.add(PPPanel, BorderLayout.EAST);
 
 		container.add(headerPanel, BorderLayout.NORTH);
 		MouseDragEventForwarder mouseDragEventForwarder = new MouseDragEventForwarder(panel);
@@ -90,14 +93,16 @@ public class PartyPointsMembers extends JPanel
 
 		add(container, BorderLayout.NORTH);
 
-		update();
+		update(plugin);
 	}
-	void update()
+
+	void update(final PartyPointsPlugin plugin)
 	{
+		PartyPointsOverlay partyPointsOverlay = new PartyPointsOverlay(this.plugin, config);
 		final PartyMember member = partyService.getMemberById(memberPartyData.getMemberId());
-		if(!avatarSet && member.getAvatar() != null)
+		if (!avatarSet && member.getAvatar() != null)
 		{
-			ImageIcon icon = new ImageIcon(ImageUtil.resizeImage(member.getAvatar(), 32, 32 ));
+			ImageIcon icon = new ImageIcon(ImageUtil.resizeImage(member.getAvatar(), 32, 32));
 			icon.getImage().flush();
 			avatar.setIcon(icon);
 			avatarSet = true;
@@ -106,5 +111,6 @@ public class PartyPointsMembers extends JPanel
 		name.setForeground(member.isLoggedIn() ? Color.white : ColorScheme.DARKER_GRAY_COLOR);
 		name.setText(member.getDisplayName());
 		PP.setText(String.valueOf(memberPartyData.getPersonalPoints()));
+		plugin.updateOverlay(member.getDisplayName(), memberPartyData.getPersonalPoints());
 	}
 }

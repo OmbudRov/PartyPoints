@@ -5,27 +5,25 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
+import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
 import net.runelite.client.ui.overlay.OverlayPanel;
-import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LineComponent;
-import net.runelite.client.ui.overlay.components.PanelComponent;
 
 public class PartyPointsOverlay extends OverlayPanel
 {
 	private final PartyPointsPlugin plugin;
 	@Inject
 	private final PartyPointsConfig config;
-	private final PanelComponent panelComponent = new PanelComponent();
 	public Map<String, Integer> PartyData = new HashMap<>();
-
 	PartyPointsOverlay(PartyPointsPlugin plugin, PartyPointsConfig config)
 	{
 		super(plugin);
-		this.config = config;
 		this.plugin = plugin;
-		setPosition(OverlayPosition.TOP_LEFT);
+		this.config = config;
 		setPriority(OverlayPriority.MED);
+		addMenuEntry(RUNELITE_OVERLAY_CONFIG,OPTION_CONFIGURE,"PartyPoints Overlay");
 	}
 
 	@Override
@@ -43,6 +41,7 @@ public class PartyPointsOverlay extends OverlayPanel
 				}
 			}
 		}
-		return panelComponent.render(graphics);
+		return super.render(graphics);
+
 	}
 }

@@ -106,6 +106,7 @@ public class PartyPointsPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		updateOverlay(client.getLocalPlayer().getName(),-1);
 		// Remove Panel from Sidebar
 		clientToolbar.removeNavigation(navButton);
 
@@ -159,7 +160,7 @@ public class PartyPointsPlugin extends Plugin
 	{
 		checkStateChanged(false);
 		overlayManager.remove(partyPointsOverlay);
-		if (party.isInParty())
+		if (party.isInParty() && config.ShowOverlay())
 		{
 			overlayManager.add(partyPointsOverlay);
 		}
@@ -279,6 +280,7 @@ public class PartyPointsPlugin extends Plugin
 
 	void leaveParty()
 	{
+		resetParty();
 		party.changeParty(null);
 		overlayManager.remove(partyPointsOverlay);
 	}

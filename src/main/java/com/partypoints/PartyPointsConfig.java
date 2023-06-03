@@ -30,11 +30,11 @@ public interface PartyPointsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "OverlayTitle",
-		name = "Show Overlay Title",
-		description = "Controls whether the overlay title is displayed"
+		keyName = "Overlay",
+		name = "Show Overlay",
+		description = "Controls whether the overlay is displayed"
 	)
-	default boolean ShowOverlayTitle()
+	default boolean ShowOverlay()
 	{
 		return true;
 	}

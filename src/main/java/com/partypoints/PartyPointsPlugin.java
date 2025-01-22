@@ -16,6 +16,7 @@ import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
+import net.runelite.api.VarPlayer;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -300,7 +301,7 @@ public class PartyPointsPlugin extends Plugin
 			return;
 		}
 
-		final int CurrentPersonalPoints = client.getVarbitValue(Varbits.PERSONAL_POINTS);
+		final int CurrentPersonalPoints = client.getVarpValue(VarPlayer.RAIDS_PERSONAL_POINTS);
 
 		final Player localPlayer = client.getLocalPlayer();
 		final String characterName = Strings.nullToEmpty(localPlayer != null && client.getGameState().getState() >= GameState.LOADING.getState() ? localPlayer.getName() : null);
